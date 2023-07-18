@@ -52,7 +52,7 @@ app.post('/generate', (req, res) => {
     // save the image respond and other info to the disk folder
 
     // redirect to /story?name={foldername} page to show to story
-}
+})
 
 
 // save to acp
