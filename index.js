@@ -20,9 +20,23 @@ app.get('/story', (req, res) => {
     res.sendFile("public/story.html", {root: __dirname})
 })
 
+// return a list of stories stored on the server
 app.post('/stories', (req, res) => {
     res.status(200).json({})
 })
+
+
+/*
+what's on disk?
+
+story-1 
+    --- story-board 1
+        --- prompt and URLSearchParams
+        --- image
+    --- story-board 2
+        --- prompt and URLSearchParams
+        --- image
+*/        
 
 app.post('/generate', (req, res) => {
     const {character} = req.body;
@@ -37,6 +51,7 @@ app.post('/generate', (req, res) => {
     // redirect to /story?name={foldername} page to show to story
 })
 
+// save to acp
 app.post('/save', (req, res) => {
     // get the story name from the query
     console.log(req.query.name)
@@ -49,7 +64,6 @@ app.post('/save', (req, res) => {
 
     res.status(200).json({})
 })
-
 
 app.listen(port, () => {
   console.log(`Example app listening on port http://localhost:${port}`)
