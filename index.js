@@ -31,6 +31,7 @@ what's on disk?
 
 /app
     /story-1 
+        --- topic txt
         --- /story-board 1
             --- prompt and params txt
             --- image png
