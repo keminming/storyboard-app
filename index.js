@@ -29,13 +29,15 @@ app.post('/stories', (req, res) => {
 /*
 what's on disk?
 
-story-1 
-    --- story-board 1
-        --- prompt and URLSearchParams
-        --- image
-    --- story-board 2
-        --- prompt and URLSearchParams
-        --- image
+/app
+    /story-1 
+        --- /story-board 1
+            --- prompt and params txt
+            --- image png
+        --- /story-board 2
+            --- prompt and params txt
+            --- image png
+    /story-2
 */        
 
 app.post('/generate', (req, res) => {
@@ -49,7 +51,8 @@ app.post('/generate', (req, res) => {
     // save the image respond and other info to the disk folder
 
     // redirect to /story?name={foldername} page to show to story
-})
+}
+
 
 // save to acp
 app.post('/save', (req, res) => {
