@@ -1,0 +1,144 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Amiri', serif;
+    background-color: #fbf3e8;
+  }
+  
+  .container {
+    text-align: center;
+  }
+  
+  .my-stories {
+    margin-top: 20px;
+  }
+  
+  .thumbnails {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .thumbnail {
+    display: inline-block;
+    width: 100px;
+    height: 150px;
+    margin: 10px;
+    background-color: lightgray;
+  }
+  
+  .expand-button {
+    margin-top: 20px;
+  }
+  
+  .arabic-title {
+    font-size: 48px;
+    color: #9b5f2f;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    direction: rtl;
+  }
+  
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Pacifico', cursive;
+  }
+  
+  .container {
+    text-align: center;
+  }
+  
+  .image-wrapper {
+    width: 512px;
+    height: 512px;
+    background-color: lightgray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding: 10px;
+  }
+  
+  .image-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+  
+  .button-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .button {
+    width: 50px;
+    height: 50px;
+    margin: 0 10px;
+    background-color: transparent;
+    border: none;
+    color: #9b5f2f;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .button:hover {
+    color: #7e462a;
+  }
+  
+  .save-button {
+    width: 120px;
+    height: 40px;
+    background-color: #9b5f2f;
+    border: none;
+    border-radius: 5px;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .save-button:hover {
+    background-color: #7e462a;
+  }
+  
+  .saved-button {
+    width: 120px;
+    height: 40px;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 5px;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: not-allowed;
+  }
+  
+  .home-button {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #9b5f2f;
+    border: none;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .home-button:hover {
+    background-color: #7e462a;
+  }

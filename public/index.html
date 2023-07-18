@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>One Thousand and One Nights</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="arabic-title">One Thousand and One Nights</h1>
+
+    <input type="text" id="character" name="character" placeholder="Enter a character name">
+  
+    <button onclick="generateStory()">Story</button>
+    
+    <div class="my-stories">
+      <h2>My Stories</h2>
+      <div class="thumbnails">
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <div class="thumbnail"></div>
+        <!-- Add more thumbnails as needed -->
+      </div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+  <script>
+    const stories = fetchStories();
+  </script>
+</body>
+</html>
