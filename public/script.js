@@ -1,53 +1,110 @@
 async function generateStory() {
-    let character = document.getElementById("character").value;
-    console.log(character);
-    let resp = await fetch("/generate", {
-      method : 'POST',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body : JSON.stringify({character: character})
+  let character = document.getElementById("character").value;
+  console.log(character);
+  let resp = await fetch("/generate", {
+    method : 'POST',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body : JSON.stringify({character: character})
+  });
+}
+
+async function populateStories(){
+  console.log('fetching stories')
+
+  let resp = await fetch("/stories", {
+    method : 'GET',
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  let data = await resp.json();
+  let stories = data.stories;
+
+  // populate my stories
+  let storyContainer = document.querySelector('#stories');
+
+  // Loop through the array
+  stories.forEach(item => {
+
+    // create a story item
+    let story = `<div class="thumbnails">
+      <h5>${item.title}</h5>
+      <p>${item.length}</p>
+      <a href="/story.html?name=${item.title}">link</>
+    </div>`;
+
+    // append it to story container
+    storyContainer.innerHTML += story;
+  });
+}
+
+const scripts = new Array(4);
+
+let currentIndex = 0;
+
+function getStoryName(){
+  const queryString = window.location.search;
+
+  // Create a new URLSearchParams object with the query string
+  const params = new URLSearchParams(queryString);
+
+  // get story name param
+  return params.get('name');
+}
+
+function populateImage(name, index){
+  document.querySelector('#image-holder img').src = `creations/${name}/${index}/response.png`;
+}
+
+async function populateScript(name, index){
+  if(scripts[index] !== undefined){
+    let resp = await fetch(`/story/${name}/board/${index}/text`, {
+      method : 'GET',
     });
-  }
 
-  function fetchStories(){
-    console.log('fetching stories')
+    let data = await resp.json();
+    let script = data.text;
+    scripts[index] = script;
+  }
+  document.querySelector('#scirpt-holder p').textContent = scripts[index];
+}
+  
+function previousBoard() {
+  const name = getStoryName();
+  if (currentIndex > 0) {
+    currentIndex--;
+    populateImage(name, currentIndex);
+    populateScript(name, currentIndex);
+  }
+}
+  
+function nextBoard() {
+  const name = getStoryName();
+  if (currentIndex < 4) {
+    currentIndex++;
+    populateImage(name, currentIndex);
+    populateScript(name, currentIndex);
+  }
+}
+  
+async function saveStory() {
+  let name = 'random'
+  let resp = await fetch(`/save?name=${name}`, {
+    method : 'POST',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body : JSON.stringify({name: name})
+  });
 
-    // populate my stories
-  }
-  
-  var images = ['image1.jpg', 'image2.jpg', 'image3.jpg']; // Add more image URLs as needed
-  var currentIndex = 0;
-  
-  function previousImage() {
-    if (currentIndex > 0) {
-      currentIndex--;
-      document.querySelector('.image-wrapper img').src = images[currentIndex];
-    }
-  }
-  
-  function nextImage() {
-    if (currentIndex < images.length - 1) {
-      currentIndex++;
-      document.querySelector('.image-wrapper img').src = images[currentIndex];
-    }
-  }
-  
-  async function saveStory() {
-    let name = 'random'
-    let resp = await fetch(`/save?name=${name}`, {
-      method : 'POST',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body : JSON.stringify({name: name})
-    });
+  let data = resp.json();
 
-    let data = resp.json();
+  // hide save button, show 'saved text'
+}
 
-    // hide save button, show 'saved text'
-  }
-  
-  function goHome() {
-    window.location.href = 'index.html'; // Replace 'index.html' with the path to your home page
-  }
+function goHome() {
+  window.location.href = 'index.html'; // Replace 'index.html' with the path to your home page
+}

@@ -7,29 +7,39 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json())
 app.use(express.urlencoded())
 
-app.get('/', (req, res) => {
-  res.sendFile("public/index.html", {root: __dirname})
-})
-
-app.get('/story', (req, res) => {
+// return the text for a particular story board
+app.get('/story/:name/board/:index/text', (req, res) => {
     // get the story name from the query
-    console.log(req.query.name)
+    console.log(req.params.name)
+    console.log(req.params.index)
 
     // search file system 
-
-    res.sendFile("public/story.html", {root: __dirname})
+    res.status(200).json({text: "hello world"})
 })
 
-// return a list of stories stored on the server
-app.post('/stories', (req, res) => {
-    res.status(200).json({})
+// return the image for a particular story board
+app.get('/story/:name/board/:index/image', (req, res) => {
+    // get the story name from the query
+    console.log(req.params.name)
+    console.log(req.params.index)
+
+    // search file system and return the requested image
 })
 
+// return a list of stories (metadata) stored on the server
+app.get('/stories', (req, res) => {
+
+    let stories = [
+        {title:"a", length:1},
+        {title:"b", length:1}
+    ]
+    res.status(200).json({stories: stories})
+})
 
 /*
 what's on disk?
 
-/app
+/creations
     /story-1 
         --- topic txt
         --- /story-board 1
@@ -53,7 +63,6 @@ app.post('/generate', (req, res) => {
 
     // redirect to /story?name={foldername} page to show to story
 })
-
 
 // save to acp
 app.post('/save', (req, res) => {
