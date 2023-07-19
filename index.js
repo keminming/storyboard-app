@@ -55,59 +55,139 @@ what's on disk?
     /story-2
 */        
 
-app.post('/generate', (req, res) => {
-    const {character} = req.body;
-    console.log(character)
-
+// Generate image using a text prompt, and save it within the directoryPath. The file path name should include the index
+// which represents the ordering of the image in the storyboard
+async function generateImage(text, index, directoryPath) {
     const fetch = require('node-fetch');
+    const fs = require('fs');
 
-    const url = 'https://api.openai.com/v1/chat/completions';
-    const apiKey = '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';
+    const engineId = 'stable-diffusion-v1-5';
+    const apiHost = process.env.API_HOST || 'https://api.stability.ai';
+    const apiKey = 'sk-7hCelYiEhiK4aHj12oAWQ65aOQXBJkK1CT3ld91HZoxp4aJx';
+
+    if (!apiKey) throw new Error('Missing Stability API key.');
+
+    (async () => {
+      const response = await fetch(
+        `${apiHost}/v1/generation/${engineId}/text-to-image`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            text_prompts: [
+              {
+                text: text,
+              },
+            ],
+            cfg_scale: 7,
+            clip_guidance_preset: 'FAST_BLUE',
+            height: 512,
+            width: 512,
+            samples: 1,
+            steps: 30,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Non-200 response: ${await response.text()}`);
+      }
+
+      const responseJSON = await response.json();
+
+      // Create the full path of the text by concatenating the directory path with the index
+      const path = directoryPath + `/img_${index}.png`;
+      console.log(path)
+      // Write the file to the FS
+      responseJSON.artifacts.forEach((image, num) => {
+        fs.writeFileSync(
+          path,
+          Buffer.from(image.base64, 'base64')
+        );
+      });
+    })();
+}
+
+// Get story in text from openAI using the text as a prompt
+// The directooryPath is where to save the files that are later generated
+async function getTextStory(text, directoryPath) {
+    const axios = require('axios');
+    const fs = require('fs');
+
+    const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
+    // Will take out the api key
+    const apiKey = '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';
 
     const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
     };
 
     const data = {
         "model": "gpt-3.5-turbo",
-        "messages": [{"role": "system", "content": "I'\''m going to illustrate a book on Harry Potter. Tell me what to draw assuming I have no prior knowledge in 5 sentences with each sentence describing one element from the book."}, {"role": "user", "content": "Hello!"}]
+        "temperature": 0.1,
+        'messages': [
+          {'role': 'system', 'content': 'I am going to draw an illustrated book of the origins story of ' + text + '. Tell me what to draw assuming I have no prior knowledge in 5 sentences with each sentence describing one element from the book. Omit the word young.'},
+        ]
     };
+    try {
+      // Make the request
+        const response = await axios.post(apiEndpoint, data, { headers });
+        console.log(response.data.choices[0].message.content);
+        const text = response.data.choices[0].message.content;
 
-    fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(data)
-    })
-      .then(response => response.json())
-      .then(result => {
-        // Handle the response
-        // console.log(result);
-        // Print out the query result
-        console.log(result.choices[0].message.content);
-        // Parse the comments into an array
-        // Split the text into an array of lines using "\n" delimiter
-        const text = result.choices[0].message.content;
-        const lines = text.split("\n");
+        // Parse the comments into an array based on numbering - sometimes the output is in a numbered list
+        filteredSentences = text.split(/\d+\.\s+/).filter(sentence => sentence.trim() !== "");
 
-        // Filter out the number and trim each line to get the sentences
-        const sentences = lines.map(line => line.replace(/^\d+\.\s*/, "").trim());
+        // If the output is not a numbered list, there will only be one element in the array that we still need to parse
+        // because it will still be a whole paragraph. Parse based periods, etc.
+        if(filteredSentences.length == 1) {
+          const paragraph = filteredSentences[0];
+          filteredSentences = paragraph.split(/[.!?]+/).filter(sentence => sentence.trim() !== "");
+        }
 
-        // Remove empty or whitespace-only sentences from the array
-        const filteredSentences = sentences.filter(sentence => sentence !== "");
-
-        // Output the parsed sentences
-        console.log([...sentences.entries()])
-      })
-      .catch(error => {
-        // Handle any errors
+        // Output the parsed sentences with its index and value
+        for (let i = 0; i < filteredSentences.length; i++) {
+          console.log(`Index: ${i}, Value: ${filteredSentences[i]}`);
+          // Generate an image for this sentence
+          // Pass in index to maintain ordering within the storyboard
+          textPath = directoryPath+`/txt_${i}.txt`;
+          fs.writeFileSync(
+            textPath,
+            filteredSentences[i]
+          );
+          generateImage(filteredSentences[i], i, directoryPath);
+        }
+    } catch (error) {
         console.error(error);
-      });
-      
+    }
+}
 
-    // call stability ai api to get images
+app.post('/generate', (req, res) => {
+    const {character} = req.body;
 
-    // save the image respond and other info to the disk folder
+    console.log("The input is " + character)
+    const fs = require('fs');
+
+    // Create directory path to store the images
+    const directoryPath = './public/creations/' + character;
+
+    // Create the directory
+    fs.mkdir(directoryPath, { recursive: true }, (error) => {
+      if (error) {
+        console.error('Error creating directory:', error);
+      } else {
+        console.log('Directory created successfully.');
+      }
+    });
+
+  // call gpt api to get title and scripts
+  // Then call stability ai api to get images
+    getTextStory(character, directoryPath);
 
     // redirect to /story?name={foldername} page to show to story
 })
