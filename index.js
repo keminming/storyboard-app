@@ -51,9 +51,48 @@ what's on disk?
     /story-2
 */        
 
+async function chatWithAI() {
+    const axios = require('axios');
+    const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
+    // Will take out the api key
+    const apiKey = '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';
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+    };
+
+    const data = {
+        "model": "gpt-3.5-turbo",
+        'messages': [
+          {'role': 'system', 'content': 'I am going to draw an illustrated book of the Harry Potter story. Please tell me what to draw as if I did not know anything about harry Potter. Do not add numbers to the sentences.'},
+        ]
+    };
+    try {
+        const response = await axios.post(apiEndpoint, data, { headers });
+        //console.log(response.data.choices[0].message.content);
+        // Parse the comments into an array
+        // Split the text into an array of lines using "\n" delimiter
+        const text = response.data.choices[0].message.content;
+        const lines = text.split("\n");
+
+        // Filter out the number and trim each line to get the sentences
+        const sentences = lines.map(line => line.replace(/^\d+\.\s*/, "").trim());
+
+        // Remove empty or whitespace-only sentences from the array
+        const filteredSentences = sentences.filter(sentence => sentence !== "");
+
+        // Output the parsed sentences
+        filteredSentences.forEach(sentence => console.log(sentence));
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 app.post('/generate', (req, res) => {
     const {character} = req.body;
     console.log(character)
+    chatWithAI();
 
     // call gpt api to get title and scripts
 
