@@ -51,28 +51,9 @@ what's on disk?
     /story-2
 */        
 
-// async function generateImage(text) {
-//   const stabilityApiKey = 'sk-7hCelYiEhiK4aHj12oAWQ65aOQXBJkK1CT3ld91HZoxp4aJx';
-//   const stabilityEndpoint = 'https://api.stability.ai/v1/generate';
-
-//   try {
-//     const response = await axios.post(stabilityEndpoint, {
-//       text: text,
-//       apiKey: stabilityApiKey,
-//     });
-
-//     // Handle the response here
-//     const imageUrl = response.data.url;
-//     console.log('Generated image:', imageUrl);
-//     // You can display or further process the image as needed
-//   } catch (error) {
-//     console.error('Error generating image:', error);
-//   }
-// }
-
-
-
-async function generateImage(text, index) {
+// Generate image using a text prompt, and save it within the directoryPath. The file path name should include the index
+// which represents the ordering of the image in the storyboard
+async function generateImage(text, index, directoryPath) {
     const fetch = require('node-fetch');
     const fs = require('fs');
 
@@ -114,25 +95,26 @@ async function generateImage(text, index) {
 
       const responseJSON = await response.json();
 
-      console.log(text)
+      // Create the full path of the text by concatenating the directory path with the index
+      const path = directoryPath + `/img_${index}.png`;
+      console.log(path)
+      // Write the file to the FS
       responseJSON.artifacts.forEach((image, num) => {
         fs.writeFileSync(
-          `/Users/annewu/hackathon/v1_txt2img_${index}.png`,
+          path,
           Buffer.from(image.base64, 'base64')
         );
       });
     })();
 }
 
-// Call the function with the desired text
-// generateImage('This is the text to convert to an image.');
-
-async function chatWithAI(text) {
-  console.log(text)
+// Get story in text from openAI using the text as a prompt
+// The directooryPath is where to save the files that are later generated
+async function getTextStory(text, directoryPath) {
     const axios = require('axios');
     const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
     // Will take out the api key
-    const apiKey = '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';
+    const apiKey = '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';
 
     const headers = {
         'Content-Type': 'application/json',
@@ -141,31 +123,33 @@ async function chatWithAI(text) {
 
     const data = {
         "model": "gpt-3.5-turbo",
+        "temperature": 0.1,
         'messages': [
-          {'role': 'system', 'content': 'I am going to draw an illustrated book of the origins story of ' + text + '. Please tell me what to draw as if I do not have any prior knowledge. Do not add numbers to the sentences. Limit to 3 sentences. Omit the word young.'},
+          {'role': 'system', 'content': 'I am going to draw an illustrated book of the origins story of ' + text + '. Tell me what to draw assuming I have no prior knowledge in 5 sentences with each sentence describing one element from the book. Omit the word young.'},
         ]
     };
     try {
+      // Make the request
         const response = await axios.post(apiEndpoint, data, { headers });
-        //console.log(response.data.choices[0].message.content);
-        // Parse the comments into an array
-        // Split the text into an array of lines using "\n" delimiter
-        const text = response.data.choices[0].message.content;
-        const lines = text.split("\n");
-
-        // Filter out the number and trim each line to get the sentences
-        const sentences = lines.map(line => line.replace(/^\d+\.\s*/, "").trim());
-
         console.log(response.data.choices[0].message.content);
-        // Remove empty or whitespace-only sentences from the array
-        const filteredSentences = sentences.filter(sentence => sentence !== "");
+        const text = response.data.choices[0].message.content;
 
-        // Output the parsed sentences
-       // const filteredSentences = ['A dog', 'a cat', 'a mouse'];
-        //filteredSentences.forEach(sentence => generateImage(sentence, ));
+        // Parse the comments into an array based on numbering - sometimes the output is in a numbered list
+        filteredSentences = text.split(/\d+\.\s+/).filter(sentence => sentence.trim() !== "");
+
+        // If the output is not a numbered list, there will only be one element in the array that we still need to parse
+        // because it will still be a whole paragraph. Parse based periods, etc.
+        if(filteredSentences.length == 1) {
+          const paragraph = filteredSentences[0];
+          filteredSentences = paragraph.split(/[.!?]+/).filter(sentence => sentence.trim() !== "");
+        }
+
+        // Output the parsed sentences with its index and value
         for (let i = 0; i < filteredSentences.length; i++) {
           console.log(`Index: ${i}, Value: ${filteredSentences[i]}`);
-          generateImage(filteredSentences[i], i);
+          // Generate an image for this sentence
+          // Pass in index to maintain ordering within the storyboard
+          generateImage(filteredSentences[i], i, directoryPath);
         }
     } catch (error) {
         console.error(error);
@@ -174,14 +158,24 @@ async function chatWithAI(text) {
 
 app.post('/generate', (req, res) => {
     const {character} = req.body;
-    console.log(character)
-    chatWithAI(character);
+    console.log("The input is " + character)
+    const fs = require('fs');
 
-    // call gpt api to get title and scripts
+    // Create directory path to store the images
+    const directoryPath = './public/creations/' + character;
 
-    // call stability ai api to get images
+    // Create the directory
+    fs.mkdir(directoryPath, { recursive: true }, (error) => {
+      if (error) {
+        console.error('Error creating directory:', error);
+      } else {
+        console.log('Directory created successfully.');
+      }
+    });
 
-    // save the image respond and other info to the disk folder
+  // call gpt api to get title and scripts
+  // Then call stability ai api to get images
+    getTextStory(character, directoryPath);
 
     // redirect to /story?name={foldername} page to show to story
 })
