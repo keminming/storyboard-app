@@ -31,9 +31,12 @@ async function populateStories(){
 
     // create a story item
     let story = `<div class="thumbnails">
-      <h5>${item.title}</h5>
-      <p>${item.length}</p>
-      <a href="/story.html?name=${item.title}">link</>
+      <div class="thumbnail">
+        <img src="creations/${item.title}/0/response.png" alt="${item.title}" width="100" height="100">
+        <a href="/story.html?name=${item.title}">
+          <h5>${item.title}</h5>
+        </a>
+      </div>
     </div>`;
 
     // append it to story container
@@ -60,7 +63,7 @@ function populateImage(name, index){
 }
 
 async function populateScript(name, index){
-  if(scripts[index] !== undefined){
+  if(scripts[index] === undefined){
     let resp = await fetch(`/story/${name}/board/${index}/text`, {
       method : 'GET',
     });
