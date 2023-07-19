@@ -67,7 +67,7 @@ app.post('/generate', (req, res) => {
 
     const data = {
         "model": "gpt-3.5-turbo",
-        "messages": [{"role": "system", "content": "I'\''m going to illustrate a book on Harry Potter. Tell me what to draw assuming I have no prior knowledge in 5 sentences with each sentence describing one element from the book."}, {"role": "user", "content": "Hello!"}]
+        "messages": [{"role": "system", "content": "I'\''m going to illustrate a book on " + character + ". Tell me what to draw assuming I have no prior knowledge in 5 sentences with each sentence describing one element from the book."}]
     };
 
     fetch(url, {
