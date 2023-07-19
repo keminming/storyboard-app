@@ -51,11 +51,88 @@ what's on disk?
     /story-2
 */        
 
-async function chatWithAI() {
+// async function generateImage(text) {
+//   const stabilityApiKey = 'sk-7hCelYiEhiK4aHj12oAWQ65aOQXBJkK1CT3ld91HZoxp4aJx';
+//   const stabilityEndpoint = 'https://api.stability.ai/v1/generate';
+
+//   try {
+//     const response = await axios.post(stabilityEndpoint, {
+//       text: text,
+//       apiKey: stabilityApiKey,
+//     });
+
+//     // Handle the response here
+//     const imageUrl = response.data.url;
+//     console.log('Generated image:', imageUrl);
+//     // You can display or further process the image as needed
+//   } catch (error) {
+//     console.error('Error generating image:', error);
+//   }
+// }
+
+
+
+async function generateImage(text, index) {
+    const fetch = require('node-fetch');
+    const fs = require('fs');
+
+    const engineId = 'stable-diffusion-v1-5';
+    const apiHost = process.env.API_HOST || 'https://api.stability.ai';
+    const apiKey = 'sk-7hCelYiEhiK4aHj12oAWQ65aOQXBJkK1CT3ld91HZoxp4aJx';
+
+    if (!apiKey) throw new Error('Missing Stability API key.');
+
+    (async () => {
+      const response = await fetch(
+        `${apiHost}/v1/generation/${engineId}/text-to-image`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            text_prompts: [
+              {
+                text: text,
+              },
+            ],
+            cfg_scale: 7,
+            clip_guidance_preset: 'FAST_BLUE',
+            height: 512,
+            width: 512,
+            samples: 1,
+            steps: 30,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Non-200 response: ${await response.text()}`);
+      }
+
+      const responseJSON = await response.json();
+
+      console.log(text)
+      responseJSON.artifacts.forEach((image, num) => {
+        fs.writeFileSync(
+          `/Users/annewu/hackathon/v1_txt2img_${index}.png`,
+          Buffer.from(image.base64, 'base64')
+        );
+      });
+    })();
+}
+
+// Call the function with the desired text
+// generateImage('This is the text to convert to an image.');
+
+async function chatWithAI(text) {
+  console.log(text)
     const axios = require('axios');
     const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
     // Will take out the api key
-    const apiKey = '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';
+    const apiKey = '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';
 
     const headers = {
         'Content-Type': 'application/json',
@@ -65,7 +142,7 @@ async function chatWithAI() {
     const data = {
         "model": "gpt-3.5-turbo",
         'messages': [
-          {'role': 'system', 'content': 'I am going to draw an illustrated book of the Harry Potter story. Please tell me what to draw as if I did not know anything about harry Potter. Do not add numbers to the sentences.'},
+          {'role': 'system', 'content': 'I am going to draw an illustrated book of the origins story of ' + text + '. Please tell me what to draw as if I do not have any prior knowledge. Do not add numbers to the sentences. Limit to 3 sentences. Omit the word young.'},
         ]
     };
     try {
@@ -79,11 +156,17 @@ async function chatWithAI() {
         // Filter out the number and trim each line to get the sentences
         const sentences = lines.map(line => line.replace(/^\d+\.\s*/, "").trim());
 
+        console.log(response.data.choices[0].message.content);
         // Remove empty or whitespace-only sentences from the array
         const filteredSentences = sentences.filter(sentence => sentence !== "");
 
         // Output the parsed sentences
-        filteredSentences.forEach(sentence => console.log(sentence));
+       // const filteredSentences = ['A dog', 'a cat', 'a mouse'];
+        //filteredSentences.forEach(sentence => generateImage(sentence, ));
+        for (let i = 0; i < filteredSentences.length; i++) {
+          console.log(`Index: ${i}, Value: ${filteredSentences[i]}`);
+          generateImage(filteredSentences[i], i);
+        }
     } catch (error) {
         console.error(error);
     }
@@ -92,7 +175,7 @@ async function chatWithAI() {
 app.post('/generate', (req, res) => {
     const {character} = req.body;
     console.log(character)
-    chatWithAI();
+    chatWithAI(character);
 
     // call gpt api to get title and scripts
 
