@@ -14,7 +14,11 @@ app.get('/story/:name/board/:index/text', (req, res) => {
     console.log(req.params.index)
 
     // search file system 
-    res.status(200).json({text: "hello world"})
+    if(req.params.index === '0'){
+        res.status(200).json({text: "hello world"})
+    }else{
+        res.status(200).json({text: "hello world 1"})       
+    }
 })
 
 // return the image for a particular story board
@@ -165,6 +169,7 @@ async function getTextStory(text, directoryPath) {
 
 app.post('/generate', (req, res) => {
     const {character} = req.body;
+
     console.log("The input is " + character)
     const fs = require('fs');
 
