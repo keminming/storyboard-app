@@ -55,7 +55,51 @@ app.post('/generate', (req, res) => {
     const {character} = req.body;
     console.log(character)
 
-    // call gpt api to get title and scripts
+    const fetch = require('node-fetch');
+
+    const url = 'https://api.openai.com/v1/chat/completions';
+    const apiKey = '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';
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    };
+
+    const data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "system", "content": "I'\''m going to illustrate a book on Harry Potter. Tell me what to draw assuming I have no prior knowledge in 5 sentences with each sentence describing one element from the book."}, {"role": "user", "content": "Hello!"}]
+    };
+
+    fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(data)
+    })
+      .then(response => response.json())
+      .then(result => {
+        // Handle the response
+        // console.log(result);
+        // Print out the query result
+        console.log(result.choices[0].message.content);
+        // Parse the comments into an array
+        // Split the text into an array of lines using "\n" delimiter
+        const text = result.choices[0].message.content;
+        const lines = text.split("\n");
+
+        // Filter out the number and trim each line to get the sentences
+        const sentences = lines.map(line => line.replace(/^\d+\.\s*/, "").trim());
+
+        // Remove empty or whitespace-only sentences from the array
+        const filteredSentences = sentences.filter(sentence => sentence !== "");
+
+        // Output the parsed sentences
+        console.log([...sentences.entries()])
+      })
+      .catch(error => {
+        // Handle any errors
+        console.error(error);
+      });
+      
 
     // call stability ai api to get images
 
