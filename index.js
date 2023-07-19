@@ -112,9 +112,11 @@ async function generateImage(text, index, directoryPath) {
 // The directooryPath is where to save the files that are later generated
 async function getTextStory(text, directoryPath) {
     const axios = require('axios');
+    const fs = require('fs');
+
     const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
     // Will take out the api key
-    const apiKey = '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';
+    const apiKey = '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';
 
     const headers = {
         'Content-Type': 'application/json',
@@ -149,6 +151,11 @@ async function getTextStory(text, directoryPath) {
           console.log(`Index: ${i}, Value: ${filteredSentences[i]}`);
           // Generate an image for this sentence
           // Pass in index to maintain ordering within the storyboard
+          textPath = directoryPath+`/txt_${i}.txt`;
+          fs.writeFileSync(
+            textPath,
+            filteredSentences[i]
+          );
           generateImage(filteredSentences[i], i, directoryPath);
         }
     } catch (error) {
