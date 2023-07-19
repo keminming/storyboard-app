@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-function writeTextToFile(contents, filePath) {
+function writeContentsToFile(contents, filePath) {
   try {
     fs.writeFileSync(filePath, contents);
     console.log('Text saved');
@@ -11,7 +11,7 @@ function writeTextToFile(contents, filePath) {
   }
 }
 
-function readTextFromFile(filePath) {
+function readContentsFromFile(filePath) {
   try {
     const data = fs.readFileSync(filePath, 'utf8');
     console.log('File contents:', data);
@@ -23,6 +23,6 @@ function readTextFromFile(filePath) {
 }
 
 module.exports = {
-  writeTextToFile,
-  readTextFromFile
+  writeContentsToFile,
+  readContentsFromFile
 };

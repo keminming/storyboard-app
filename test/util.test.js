@@ -7,13 +7,13 @@ describe('Utils', () => {
   it('testing write file', () => {
     var text = "Hello World";
     var filePath = path.join(process.cwd(), "sample-test.txt");
-    var status = myUtils.writeTextToFile(text, filePath);
+    var status = myUtils.writeContentsToFile(text, filePath);
     assert.strictEqual(status, true);
   });
 
   it('testing read file', () => {
     var filePath = path.join(process.cwd(), "sample-test.txt");
-    var contents = myUtils.readTextFromFile(filePath);
+    var contents = myUtils.readContentsFromFile(filePath);
     assert.strictEqual(contents == "Hello World", true);
   });
 });
