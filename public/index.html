@@ -8,9 +8,9 @@
   <div class="container">
     <h1 class="arabic-title">One Thousand and One Nights</h1>
 
-    <form>
+    <form id="genForm">
       <input type="text" id="character" name="character" placeholder="Enter a character name">
-      <button onclick="generateStory()">Generate Story</button>
+      <button>Generate Story</button>
     </form>
     
     <div class="my-stories">
@@ -22,6 +22,10 @@
   
   <script src="script.js"></script>
   <script>
+    document.querySelector("#genForm").addEventListener("submit", function(e){
+      e.preventDefault(); 
+      generateStory();   //stop form from submitting
+    });
     populateStories();
   </script>
 </body>

@@ -18,7 +18,6 @@ app.get('/story/:name/board/:index/text', (req, res) => {
     
     let script = null;
     try {
-      // Read the file synchronously and store its content in the 'fileContent' variable
       script = fs.readFileSync(scriptPath, 'utf-8');
     } catch (error) {
       console.error('Error reading file:', error);
@@ -83,7 +82,6 @@ async function generateImage(text, index, directoryPath) {
 
     if (!apiKey) throw new Error('Missing Stability API key.');
 
-    (async () => {
       const response = await fetch(
         `${apiHost}/v1/generation/${engineId}/text-to-image`,
         {
@@ -117,7 +115,6 @@ async function generateImage(text, index, directoryPath) {
 
       // Create the full path of the text by concatenating the directory path with the index
       const path = directoryPath + `/${index}/response.png`;
-      console.log(path)
       // Write the file to the FS
       responseJSON.artifacts.forEach((image, num) => {
         fs.writeFileSync(
@@ -125,7 +122,8 @@ async function generateImage(text, index, directoryPath) {
           Buffer.from(image.base64, 'base64')
         );
       });
-    })();
+
+      console.log(`image created at: ${path}`);
 }
 
 // Get story in text from openAI using the text as a prompt
@@ -151,6 +149,7 @@ async function getTextStory(text, directoryPath) {
           {'role': 'system', 'content': 'I am going to draw an illustrated book of the origins story of ' + text + '. Tell me what to draw assuming I have no prior knowledge in 5 sentences with each sentence describing one element from the book. Omit the word young.'},
         ]
     };
+
     try {
       // Make the request
         const response = await axios.post(apiEndpoint, data, { headers });
@@ -169,24 +168,21 @@ async function getTextStory(text, directoryPath) {
 
         // Output the parsed sentences with its index and value
         for (let i = 0; i < filteredSentences.length; i++) {
-          console.log(`Index: ${i}, Value: ${filteredSentences[i]}`);
+          //console.log(`Index: ${i}, Value: ${filteredSentences[i]}`);
           // Generate an image for this sentence
           // Pass in index to maintain ordering within the storyboard
 
           // Create the directory for board
           const boardPath = directoryPath + `/${i}/`;
-          fs.mkdir(boardPath, { recursive: true }, async (error) => {
-            if (error) {
-              console.error('Error creating directory:', error);
-            } else {
-              textPath = boardPath + `script.txt`;
-              fs.writeFileSync(
-                textPath,
-                filteredSentences[i]
-              );
-              return generateImage(filteredSentences[i], i, directoryPath);
-            }
-          });
+          fs.mkdirSync(boardPath, { recursive: true });
+
+          textPath = boardPath + `script.txt`;
+          fs.writeFileSync(
+            textPath,
+            filteredSentences[i]
+          );
+          
+          await generateImage(filteredSentences[i], i, directoryPath);
         }
     } catch (error) {
       console.error(error);
@@ -204,17 +200,12 @@ app.post('/generate', async (req, res) => {
     const directoryPath = './public/creations/' + character;
 
     // Create the directory
-    fs.mkdir(directoryPath, { recursive: true }, (error) => {
-      if (error) {
-        console.error('Error creating directory:', error);
-      } else {
-        console.log('Directory created successfully.');
-      }
-    });
+    fs.mkdirSync(directoryPath, { recursive: true });
 
   // call gpt api to get title and scripts
   // Then call stability ai api to get images
     await getTextStory(character, directoryPath);
+
     res.status(200).json({});
 })
 

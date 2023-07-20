@@ -8,6 +8,10 @@ async function generateStory() {
     },
     body : JSON.stringify({character: character})
   });
+
+  if(resp.status === 200){
+    window.location.href = `/story.html?name=${character}`;
+  }
 }
 
 async function populateStories(){
