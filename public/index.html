@@ -11,6 +11,7 @@
     <form id="genForm">
       <input type="text" id="character" name="character" placeholder="Enter a character name">
       <button>Generate Story</button>
+      <p id="spinner" hidden> ... </p>
     </form>
     
     <div class="my-stories">
@@ -23,8 +24,10 @@
   <script src="script.js"></script>
   <script>
     document.querySelector("#genForm").addEventListener("submit", function(e){
-      e.preventDefault(); 
-      generateStory();   //stop form from submitting
+      e.preventDefault(); //stop form from submitting
+      let spinner = document.querySelector("#spinner");
+      spinner.hidden = !spinner.hidden;
+      generateStory();
     });
     populateStories();
   </script>
