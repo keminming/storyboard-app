@@ -135,7 +135,7 @@ async function getTextStory(text, directoryPath) {
 
     const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
     // Will take out the api key
-    const apiKey = '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';
+    const apiKey = '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';
 
     const headers = {
         'Content-Type': 'application/json',
