@@ -44,7 +44,7 @@ async function populateStories(){
   });
 }
 
-const scripts = new Array(4);
+const scripts = new Array(5);
 
 let currentIndex = 0;
 

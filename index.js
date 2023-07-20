@@ -13,12 +13,19 @@ app.get('/story/:name/board/:index/text', (req, res) => {
     console.log(req.params.name)
     console.log(req.params.index)
 
-    // search file system 
-    if(req.params.index === '0'){
-        res.status(200).json({text: "hello world"})
-    }else{
-        res.status(200).json({text: "hello world 1"})       
+    const scriptPath = path.join(__dirname, `public/creations/${req.params.name}/${req.params.index}/script.txt`);
+    const fs = require('fs');
+    
+    let script = null;
+    try {
+      // Read the file synchronously and store its content in the 'fileContent' variable
+      script = fs.readFileSync(scriptPath, 'utf-8');
+    } catch (error) {
+      console.error('Error reading file:', error);
     }
+
+    // search file system 
+    res.status(200).json({text: `${script}`});
 })
 
 // return the image for a particular story board
@@ -30,14 +37,23 @@ app.get('/story/:name/board/:index/image', (req, res) => {
     // search file system and return the requested image
 })
 
+function getSubfolderNames(folderPath) {
+  const fs = require('fs');
+  const subfolders = fs.readdirSync(folderPath, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
+
+  return subfolders;
+}
+
 // return a list of stories (metadata) stored on the server
 app.get('/stories', (req, res) => {
 
-    let stories = [
-        {title:"a", length:1},
-        {title:"b", length:1}
-    ]
-    res.status(200).json({stories: stories})
+  const folderPath = path.join(__dirname, 'public/creations'); // Adjust the path as needed
+  const subfolders = getSubfolderNames(folderPath);
+  let stories = subfolders.map((title) => ({title, length:5}));
+
+  res.status(200).json({stories: stories})
 })
 
 /*
@@ -100,7 +116,7 @@ async function generateImage(text, index, directoryPath) {
       const responseJSON = await response.json();
 
       // Create the full path of the text by concatenating the directory path with the index
-      const path = directoryPath + `/img_${index}.png`;
+      const path = directoryPath + `/${index}/response.png`;
       console.log(path)
       // Write the file to the FS
       responseJSON.artifacts.forEach((image, num) => {
@@ -115,12 +131,13 @@ async function generateImage(text, index, directoryPath) {
 // Get story in text from openAI using the text as a prompt
 // The directooryPath is where to save the files that are later generated
 async function getTextStory(text, directoryPath) {
+    
     const axios = require('axios');
     const fs = require('fs');
 
     const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
     // Will take out the api key
-    const apiKey = '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';
+    const apiKey = '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';
 
     const headers = {
         'Content-Type': 'application/json',
@@ -155,19 +172,29 @@ async function getTextStory(text, directoryPath) {
           console.log(`Index: ${i}, Value: ${filteredSentences[i]}`);
           // Generate an image for this sentence
           // Pass in index to maintain ordering within the storyboard
-          textPath = directoryPath+`/txt_${i}.txt`;
-          fs.writeFileSync(
-            textPath,
-            filteredSentences[i]
-          );
-          generateImage(filteredSentences[i], i, directoryPath);
+
+          // Create the directory for board
+          const boardPath = directoryPath + `/${i}/`;
+          fs.mkdir(boardPath, { recursive: true }, async (error) => {
+            if (error) {
+              console.error('Error creating directory:', error);
+            } else {
+              textPath = boardPath + `script.txt`;
+              fs.writeFileSync(
+                textPath,
+                filteredSentences[i]
+              );
+              return generateImage(filteredSentences[i], i, directoryPath);
+            }
+          });
         }
     } catch (error) {
-        console.error(error);
-    }
+      console.error(error);
+    } 
 }
 
-app.post('/generate', (req, res) => {
+app.post('/generate', async (req, res) => {
+
     const {character} = req.body;
 
     console.log("The input is " + character)
@@ -187,9 +214,8 @@ app.post('/generate', (req, res) => {
 
   // call gpt api to get title and scripts
   // Then call stability ai api to get images
-    getTextStory(character, directoryPath);
-
-    // redirect to /story?name={foldername} page to show to story
+    await getTextStory(character, directoryPath);
+    res.status(200).json({});
 })
 
 // save to acp
