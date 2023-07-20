@@ -170,3 +170,12 @@ body {
   .home-button:hover {
     background-color: #7e462a;
   }
+
+  .green-check {
+    color: green;
+    margin-left: 5px; /* Adjust the margin as needed */
+  }
+
+  #done-text {
+    font-size: 24px; /* Increase the font size for the "Saved" text */
+  }

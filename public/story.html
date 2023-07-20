@@ -16,8 +16,11 @@
       <button class="button" onclick="previousBoard()">&#9664;</button>
       <button class="button" onclick="nextBoard()">&#9654;</button>
     </div>
-    <button class="save-button" onclick="saveStory()">Save Story</button>
-    <p>Saved</p>
+    <button id="save-button" class="save-button" onclick="saveStory()">Save to ACP</button>
+    <p id="done-text" hidden>
+      Done
+      <span class="green-check">&#10004;</span>
+    </p>
   </div>
   
   <button class="home-button" onclick="goHome()">&#x1F3E0;</button>

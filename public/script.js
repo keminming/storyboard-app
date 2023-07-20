@@ -98,7 +98,7 @@ function nextBoard() {
 }
   
 async function saveStory() {
-  let name = 'random'
+  const name = getStoryName();
   let resp = await fetch(`/save?name=${name}`, {
     method : 'POST',
     headers: {
@@ -107,7 +107,13 @@ async function saveStory() {
     body : JSON.stringify({name: name})
   });
 
-  let data = resp.json();
+  if(resp.status === 200){
+    let save = document.querySelector('#save-button');
+    let done = document.querySelector('#done-text');
+
+    save.hidden = !save.hidden;
+    done.hidden = !done.hidden;
+  }
 
   // hide save button, show 'saved text'
 }
